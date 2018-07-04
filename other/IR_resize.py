@@ -6,8 +6,8 @@ import numpy as np
 import cv2
 
 
-inputpath = "/home/pi/IRcamera/img/"
-outputpath = "/home/pi/IRcamera/resized_img/"
+inputpath = "IRcamera/img/"
+outputpath = "IRcamera/resized_img/"
 scale = 10
 folderpath = os.listdir(inputpath)
 

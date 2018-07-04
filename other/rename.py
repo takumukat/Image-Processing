@@ -3,10 +3,7 @@
 import os
 import glob
 
-#PATH = "C:\\Users\\Takumi\\PycharmProjects\\OWLIFT\\image_data\\right_or_left\\distance_test\\"
-PATH = "C:\\Users\\Takumi\\PycharmProjects\\OWLIFT\\image_data\\lie\\1120_lie4m\\"
-#PATH = "C:\\Users\\Takumi\\PycharmProjects\\OWLIFT\\image_data\\right_or_left\\"
-#PATH = "C:\\Users\\Takumi\\PycharmProjects\\OWLIFT\\image_data\\17_11_20\\distance_test\\"
+#PATH = "OWLIFT\\image_data\\17_11_20\\distance_test\\"
 #folder = "l2m6m"
 #"""
 #---------複数フォルダ-----------------

@@ -2,12 +2,8 @@ import cv2
 import numpy as np
 import os
 
-#inputPath = "C:\\users\\Takumi\\PycharmProjects\\OWLIFT\\image_data\\fall\\"
-inputPath = r"C:\Users\Takumi\PycharmProjects\OWLIFT\image_data\dataset\fall_detection_dataset\fall_270\\"
-#inputPath = "C:\\Users\\Takumi\\chuukan\\winter\\_5times\\"
-#outputPath = "C:\\users\\Takumi\\PycharmProjects\\OWLIFT\\Videos\\"
-outputPath = "C:\\users\\Takumi\\PycharmProjects\\OWLIFT\\image_data\\"
-#outputPath = "C:\\Users\\Takumi\\chuukan\\winter\\"
+#inputPath = "chuukan\\winter\\_5times\\"
+#outputPath = "PycharmProjects\\OWLIFT\\Videos\\"
 filename = "1225_fall2m_1225_fall2m_00"
 width = 80
 height = 60

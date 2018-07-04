@@ -5,7 +5,7 @@ import glob
 import numpy as np
 import cv2
 
-path = r'C:\Ritsumei\B4\fall_detection'
+path = r'B4\fall_detection'
 dirs = os.listdir(path)
 #タイルを何列にするか
 width = 5

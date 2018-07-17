@@ -96,7 +96,7 @@ def main():
         raw = raw.reshape(n, height, width)
         raw = raw[:, 10:, :]   #上から10行は真っ黒
         dark = raw[:, 0:1080, 0:1920]   #MEの暗部,SE,SDR
-        bright = raw[:, 20:1100, 1920:3840]   #MEの明部
+        bright = raw[:, 30:1110, 1920:3840]   #MEの明部
 
         d_imgs = []   #darkの動画
         b_imgs = []   #brightの動画

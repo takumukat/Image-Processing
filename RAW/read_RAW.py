@@ -82,7 +82,6 @@ def main():
     else:
         sys.exit()
 
-
     raw = readTwoBytes(args.path)
 
     #画像1枚のとき
@@ -96,8 +95,8 @@ def main():
         n = int(len(raw) / width / height)   #画像何枚分の動画か
         raw = raw.reshape(n, height, width)
         raw = raw[:, 10:, :]   #上から10行は真っ黒
-        dark = raw[:, 0:1090, 0:1920]   #MEの暗部,SE,SDR
-        bright = raw[:, 10:1100, 1920:3840]   #MEの明部
+        dark = raw[:, 0:1080, 0:1920]   #MEの暗部,SE,SDR
+        bright = raw[:, 20:1100, 1920:3840]   #MEの明部
 
         d_imgs = []   #darkの動画
         b_imgs = []   #brightの動画

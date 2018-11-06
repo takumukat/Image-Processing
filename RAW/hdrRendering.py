@@ -10,13 +10,13 @@ import readRaw
 
 
 class HDRrendering(object):
-    def __init__(self,expRatio, expLine, threshold='0xffe'):
+    def __init__(self,expRatio, ofset, threshold='0xffe'):
         self.ratio = expRatio
-        self.line = expLine
+        self.ofset = ofset
         self.th = int(threshold,0)
         self.width = 1920
         self.height = 1080
-        print('\nexpRatio: {}   ofset: {}   threshold: {}'.format(self.ratio, self.line, self.th))
+        print('\nexpRatio: {}   ofset: {}   threshold: {}'.format(self.ratio, self.ofset, self.th))
 
 
     def separateColor(self, rawMatrix):
@@ -56,25 +56,28 @@ class HDRrendering(object):
         return tint0area
 
 
+    #16bit画像を8bitに変える
     def convert8bit(self, img16bit):
         MAX = img16bit.max()
         MIN = img16bit.min()
 
-        img8bit = ( (img16bit-MIN) / (MAX-MIN) ) * (2**8-1)
+        img8bit = ((img16bit - MIN) / (MAX - MIN)) * (2 ** 8 - 1)
 
         return np.uint8(img8bit)
 
 
+    # tint0エリアだけ表示
     def showTint0(self, raw0, tint0area):
-        # tint0エリアだけ表示
-        rgb = readRaw.rgb(raw0)
 
         thimg = np.zeros((int(self.height), int(self.width)))
 
         thimg[tint0area == True] = raw0[tint0area == True]
+        thimg[tint0area == False] = 0
+
+        rgb = readRaw.rgb(thimg)
         img = self.convert8bit(rgb)
-        thImg = Image.fromarray(img, 'RGB')
-        thImg.show()
+        image = Image.fromarray(img, 'RGB')
+        image.show()
 
 
     def rendering(self, raw_0, raw_1, tint0area):
@@ -82,7 +85,7 @@ class HDRrendering(object):
         raw1 = raw_1.astype(np.float32)
         raw0[tint0area == False] = raw1[tint0area == False]*self.ratio
 
-        return np.uint16(raw0)
+        return raw0
 
 
 
@@ -121,12 +124,19 @@ class HDRrendering(object):
 
 
     def __call__(self, path, renderMode=0):
-        raw0, raw1 = self.readME(path)
+        #tint0:raw0 tint1:raw1
+        raw0, raw1 = readRaw.rawReader(path, mode='ME', ofset=self.ofset)
+
+        #tint0をベイヤーごとに分ける
         GrGbRB0 = self.separateColor(raw0)
 
+        #さちってる部分をみつける
         tint0area = self.checkSaturation(GrGbRB0)
+
+        #tint0部分だけ可視化
         #self.showTint0(raw0, tint0area)
 
+        #合成 モードは0しかつかわない
         if renderMode == 0:
             hdr = self.rendering(raw0, raw1, tint0area)
         else:
@@ -137,17 +147,13 @@ class HDRrendering(object):
 
 
 def saveTiff(img, name):
-    MIN = img.min()
-    MAX = img.max()
-
-    image = ((img.astype(np.float32) - MIN) / (MAX - MIN)) * (2 ** 16 - 1)
-    img16bit = image.astype(np.uint16)
+    img16bit = img.astype(np.uint16)
 
     tifffile.imsave(name, img16bit, dtype='uint16')
 
 
 
-def saveImg(img, name):
+def savePng(img, name):
     image = Image.fromarray(img)
     image.save(name, 'PNG')
     print('save  '+name)
@@ -161,21 +167,23 @@ def main():
     path = 'sample\\testME2\\'
     name = ['me20180903_122145_0000.raw', 'me20180903_182506_0000.raw', 'MEHDR20180903_211819_0415.raw']
 
+
     expRatio = (exp1 / exp2).astype(np.int8)
-    expLine = exp2
+    ofset = exp2
 
 
     for i in range(len(name)):
-        render = HDRrendering(expRatio[i], expLine[i], threshold='0xffe')
+        render = HDRrendering(expRatio[i], ofset[i], threshold='0xffe')
 
         #Mode{0:普通   Not0:改}
         hdr = render(path+name[i], renderMode=0)
+        print(hdr.dtype)
         rgb = readRaw.rgb(hdr)
 
         saveTiff(rgb, path+name[i][:-4]+'.tif')
         img = render.convert8bit(rgb)
 
-        saveImg(img, path+name[i][:-4]+'.png')
+        savePng(img, path+name[i][:-4]+'.png')
 
 
 

@@ -171,11 +171,8 @@ def showHistgram(beforeImg, mode, beforeHist=False, afterHist=True):
 def main():
     mode = 'SE'
 
-    path = 'driving\\0903_1_SE-HDR\\SEHDR20180903_115101_tiff\\'
-    out = 'driving\\0903_1_SE-HDR\\SEHDR20180903_115101_augment\\'
-
-    #path = 'E:\\HASHIMOTO\\0903_1_SDR\\sdr220180903_122144_me_tiff\\'
-    #out = 'E:\\HASHIMOTO\\0903_1_SDR\\sdr220180903_122144_me_augment\\'
+    path = '\\'
+    out = '\\'
 
     files = os.listdir(path)
     os.mkdir(out)

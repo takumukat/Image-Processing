@@ -5,7 +5,7 @@ import os
 import array
 import tifffile
 
-import read_raw
+import readRaw
 import hdrRendering
 
 
@@ -14,7 +14,7 @@ def separete(mode, path, output, saveRaw=True, saveTiff=True, ratio=None, ofset=
     outRaw = output[0]
     outTiff = output[1]
 
-    width, height, bit = read_raw.modeCheck(mode)
+    width, height, bit = readRaw.modeCheck(mode)
     if mode == 'ME':
         if th == None:
             render = hdrRendering.HDRrendering(ratio, ofset)
@@ -34,6 +34,8 @@ def separete(mode, path, output, saveRaw=True, saveTiff=True, ratio=None, ofset=
         data.fromfile(f, width * height)
         raw = np.array(data).reshape(height, width)  # 画像の形に変える
         raw = raw[10:]  # 上から10行は真っ黒
+        #raw -= 256  #sub dark ofset
+        #raw[raw < 0] = 0  #0~3839
 
         #RAW保存名
         nameRaw = outRaw + '\\' + path.split('\\')[-1][:-4] + '_{:05d}.raw'.format(i)
@@ -51,11 +53,21 @@ def separete(mode, path, output, saveRaw=True, saveTiff=True, ratio=None, ofset=
             # --------------- save tiff ---------------
             if saveTiff == True:
                 raw16bit = raw.astype(np.uint16)
-                img16bit = read_raw.rgb(raw16bit)
+                img16bit = readRaw.rgb(raw16bit)
                 tifffile.imsave(nameTiff, img16bit, dtype='uint16')
 
             print('{} / {}\n\n'.format(i+1, length))
 
+            """
+            from PIL import Image
+            img16bit3839 = np.float32(img16bit)
+            img16bit3839 /= 3839
+            img8bit = img16bit3839 * 255
+            img = Image.fromarray(np.uint8(img8bit))
+
+            img.show()
+            break
+            """
 
         elif mode == 'ME':
             raw0 = raw[0:1080, 0:1920]
@@ -76,7 +88,7 @@ def separete(mode, path, output, saveRaw=True, saveTiff=True, ratio=None, ofset=
                 hdr = render.rendering(raw0, raw1, tint0area)
 
                 raw16bit = hdr.astype(np.uint16)
-                img16bit = read_raw.rgb(raw16bit)
+                img16bit = readRaw.rgb(raw16bit)
                 tifffile.imsave(nameTiff, img16bit, dtype='uint16')
 
 
@@ -91,14 +103,18 @@ def separete(mode, path, output, saveRaw=True, saveTiff=True, ratio=None, ofset=
 
 
 def main():
-    mode = 'ME'
-    path = ''
+    mode = 'SDR'
+    path = 'E:\\HASHIMOTO\\0903_2_SDR\\'
     files = sorted([f for f in os.listdir(path) if f[-4:] == '.raw'])
+    print(files)
 
+    #------ME-HDR setting--------
     exp1 = np.array([276, 2186])
     exp2 = np.array([8, 68])
     expRatio = exp1 / exp2
     ofset = exp2
+    #---------------------------
+
 
     for i, file in enumerate(files):
         print('INPUT PATH: {}'.format(path))
@@ -111,7 +127,8 @@ def main():
         os.mkdir(outTiff)
 
         output = [outRaw, outTiff]
-        separete(mode, path+file, output, ratio=expRatio[i], ofset=ofset[i])
+        #separete(mode, path+file, output, ratio=expRatio[i], ofset=ofset[i])
+        separete(mode, path + file, output)
 
     return
 

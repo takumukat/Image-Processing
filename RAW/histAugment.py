@@ -1,6 +1,6 @@
 # coding: utf-8
 
-import read_raw
+import readRaw
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -11,9 +11,10 @@ import tifffile
 
 class HistAugment(object):
     def __init__(self, mode, max=None):
-        if mode == 'SDR' or mode == 'ME':
+        # SDR:12bit image  ME & SE: 16bit image
+        if mode == 'SDR':
             bit = 12
-        elif mode == 'SE':
+        elif mode == 'SE' or mode == 'ME':
             bit = 16
         else:
             print('mode error')
@@ -89,75 +90,33 @@ class HistAugment(object):
 
 
 
-def saveImg(path, mode):
-    width, height, bit = read_raw.modeCheck(mode)
-
-    aug = HistAugment(mode=mode)
-
-    #path: .rawファイルが複数入っているフォルダパス
-    files = os.listdir(path)
-    files = sorted([file for file in files if file[-4:] == '.raw'])
-
-    if mode == 'SE' or mode == 'SDR':
-        for i, file in enumerate(files):
-            img = read_raw.rawReader(path+file, mode)
-            img = img[0]  # 0 ~ 2**16-1
-
-            # 横 x 縦 x RGB3枚  (ヒストグラム調整用)
-            img_3ch = img.transpose(2, 0, 1)
-
-            newImg_3ch = aug.hist_augment(img_3ch)
-            d = (2 ** bit - 1) / (2 ** 8 - 1)   #0~255に収める
-            newImg = newImg_3ch.transpose(1, 2, 0)
-            newImg /= d
-
-            #save PNG
-            namePng = path+file[:-9] + '_{:04d}.png'.format(i)
-            pilImg = Image.fromarray(np.uint8(newImg))
-            pilImg.save(namePng)
-
-
-            print('{} / {}\n\n'.format(i+1, len(files)))
-
-    if mode == 'ME':
-        for i, file in enumerate(files):
-            img = read_raw.rawReader(path, mode)
-            d_img, b_img = img  # 0 ~ 2**16-1
-            #save
-
-            d_name = ''
-            b_name = ''
-
-            tiff_d = TIFF.open(d_name, mode='w')
-            tiff_d.write_image(d_img)
-            tiff_d.close()
-
-            tiff_b = TIFF.open(b_name, mode='w')
-            tiff_b.write_image(b_img)
-            tiff_b.close()
-            print('save success')
-
-            print('{} / {}\n\n'.format(i + 1, len(files)))
+def savePng(augmentedImg, outPath):
+    augmentedImg /= augmentedImg.max()
+    augmentedImg *= 255.
+    newImg = augmentedImg.astype(np.uint8)
+    Img = Image.fromarray(newImg)
+    Img.save(outPath, 'PNG')
 
 
 
 
-def showHistgram(img, mode, before=False, after=True):
-    w, h, bit = read_raw.modeCheck(mode)
+
+def showHistgram(beforeImg, mode, beforeHist=False, afterHist=True):
+    w, h, bit = readRaw.modeCheck(mode)
     max = 2 ** bit - 1
 
     # 横 x 縦 x RGB3枚  (ヒストグラム調整用)
-    img_3ch = img.transpose(2, 0, 1)
+    img_3ch = beforeImg.transpose(2, 0, 1)
 
-    n_bin = int(np.max(img))
+    n_bin = int(np.max(beforeImg))
 
 
     #----------------------------------------元の画像-------------------------------------
-    if before == True:
+    if beforeHist == True:
         fig = plt.figure()
                 #left,bottom,width,height
         plt.axes([0.05,0.2,0.5,0.8])
-        plt.imshow(img / max)
+        plt.imshow(beforeImg / max)
 
         plt.axes([0.6,0.2,0.36,0.6])
 
@@ -183,7 +142,7 @@ def showHistgram(img, mode, before=False, after=True):
     #plt.imshow((newImg_3ch / max).transpose(1, 2, 0))
     #plt.show()
 
-    if after == True:
+    if afterHist == True:
         fig2 = plt.figure()
 
         plt.axes([0.05,0.2,0.5,0.8])
@@ -212,22 +171,32 @@ def showHistgram(img, mode, before=False, after=True):
 def main():
     mode = 'SE'
 
-    path = 'sample\\tiff\\'
-    files = os.listdir(path)
+    path = 'driving\\0903_1_SE-HDR\\SEHDR20180903_115101_tiff\\'
+    out = 'driving\\0903_1_SE-HDR\\SEHDR20180903_115101_augment\\'
 
-    for i in range(len(files)):
-        img = np.array(tifffile.imread(path+files[i]), dtype=np.float32)
+    #path = 'E:\\HASHIMOTO\\0903_1_SDR\\sdr220180903_122144_me_tiff\\'
+    #out = 'E:\\HASHIMOTO\\0903_1_SDR\\sdr220180903_122144_me_augment\\'
+
+    files = os.listdir(path)
+    os.mkdir(out)
+
+    for i, file in enumerate(files):
+        img = np.array(tifffile.imread(path+file), dtype=np.float32)
 
         img_3ch = img.transpose(2, 0, 1)
 
         aug = HistAugment(mode=mode)
         newImg_3ch = aug.hist_augment(img_3ch)
         newImg = newImg_3ch.transpose(1, 2, 0)
-        newImg = newImg.astype(np.uint16)
 
         # showHistgram(img, mode, before=True, after=True)
 
-        tifffile.imsave(path+files[i][:-4]+'_aug.tif', newImg, dtype='uint16')
+        outPath = out+file.split('.')[:-1]+'_aug.png'
+        savePng(newImg, outPath)
+
+
+        print('{} / {}\n'.format(i+1, len(files)))
+
 
 if __name__ == '__main__':
     main()

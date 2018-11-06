@@ -6,7 +6,7 @@ import numpy as np
 from PIL import Image
 import tifffile
 
-import read_raw
+import readRaw
 
 
 class HDRrendering(object):
@@ -17,26 +17,6 @@ class HDRrendering(object):
         self.width = 1920
         self.height = 1080
         print('\nexpRatio: {}   ofset: {}   threshold: {}'.format(self.ratio, self.line, self.th))
-
-
-    def readME(self, path):
-        dummy = 10
-        ofset = self.line
-        numOfPixel = int(os.path.getsize(path) / 2)
-
-        data = array.array('H')  # 'H': unsigned short (2byte)
-
-        f = open(path, 'rb')
-        data.fromfile(f, numOfPixel)
-        f.close()
-
-        raw = np.array(data).reshape(1390, 3840)
-
-        raw0 = raw[dummy:dummy+self.height, 0:self.width]
-        raw1 = raw[dummy+ofset:dummy+ofset+self.height, self.width:self.width*2]
-
-        return raw0, raw1
-
 
 
     def separateColor(self, rawMatrix):
@@ -75,6 +55,7 @@ class HDRrendering(object):
         """
         return tint0area
 
+
     def convert8bit(self, img16bit):
         MAX = img16bit.max()
         MIN = img16bit.min()
@@ -86,7 +67,7 @@ class HDRrendering(object):
 
     def showTint0(self, raw0, tint0area):
         # tint0エリアだけ表示
-        rgb = read_raw.rgb(raw0)
+        rgb = readRaw.rgb(raw0)
 
         thimg = np.zeros((int(self.height), int(self.width)))
 
@@ -100,11 +81,6 @@ class HDRrendering(object):
         raw0 = raw_0.astype(np.float32)
         raw1 = raw_1.astype(np.float32)
         raw0[tint0area == False] = raw1[tint0area == False]*self.ratio
-
-        #16bitに正規化
-        #MIN = raw0.min()
-        #MAX = raw0.max()
-        #raw0 = ( (raw0-MIN) / (MAX-MIN) ) * (2**16-1)
 
         return np.uint16(raw0)
 
@@ -173,7 +149,6 @@ def saveTiff(img, name):
 
 def saveImg(img, name):
     image = Image.fromarray(img)
-    #image.show()
     image.save(name, 'PNG')
     print('save  '+name)
 
@@ -195,7 +170,7 @@ def main():
 
         #Mode{0:普通   Not0:改}
         hdr = render(path+name[i], renderMode=0)
-        rgb = read_raw.rgb(hdr)
+        rgb = readRaw.rgb(hdr)
 
         saveTiff(rgb, path+name[i][:-4]+'.tif')
         img = render.convert8bit(rgb)

@@ -72,7 +72,7 @@ def rgb_q(raw):
     return img
 
 
-#OpenCVのcvtColorで色付け，出力サイズ=入力サイズ
+#OpenCVのcvtColorで色付け，raw ndarray入力，uint16 ndarray出力
 def rgb(raw):
     raw = np.uint16(raw)  # cvtColorはuint8かuint16
     #cvtColor: GBベイヤー配列 -> RGB
@@ -82,7 +82,7 @@ def rgb(raw):
 
 
 
-# 静止画: SDR, SE:1枚を入れた配列，ME:2枚を入れた配列  (値は0~2**bit-1)
+# SDR, SE:1枚を入れたra2次元w配列，ME:2枚を入れたraw2次元配列  (値は0~2**bit-1)
 def rawReader(path, mode, ofset=None):
 
     width, height, bit = modeCheck(mode)
@@ -108,7 +108,7 @@ def rawReader(path, mode, ofset=None):
         return raw
 
 
-
+# raw画像をグレースケールで見る
 def showRaw(raw):
     raw = raw.astype(np.float32)
     raw /= raw.max()
@@ -121,6 +121,7 @@ def showRaw(raw):
 
 
 def main():
+    # デフォルトのパス，モード
     defImage = 'sample\\RGB_Linear\\20180713_155927.raw'
     defMode = 'SDR'
 

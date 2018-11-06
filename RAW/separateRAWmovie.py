@@ -104,7 +104,7 @@ def separete(mode, path, output, saveRaw=True, saveTiff=True, ratio=None, ofset=
 
 def main():
     mode = 'SDR'
-    path = 'E:\\HASHIMOTO\\0903_2_SDR\\'
+    path = '\\'
     files = sorted([f for f in os.listdir(path) if f[-4:] == '.raw'])
     print(files)
 
